@@ -8,8 +8,8 @@ El proyecto fue desarrollado originalmente hace un tiempo y ha sido **completame
 
 *   **Mezcla de Sonido Personalizada:** Selecciona y combina hasta tres pistas de audio desde el almacenamiento de tu dispositivo:
     *   Música de fondo.
-    *   Ondas binaurales.
-    *   Sonido de campana periódico.
+    *   Ondas binaurales. (En Carpeta /Binaural)
+    *   Sonido de campana periódico. (En Carpeta /Dings)
 *   **Control de Volumen Independiente:** Ajusta el volumen de cada pista por separado para crear la mezcla perfecta.
 *   **Intervalos de Campana Configurables:** Elige cada cuántos minutos quieres que suene la campana para marcar tus sesiones.
 *   **Reproducción en Segundo Plano:** La sesión de sonido continúa activa gracias a un `Foreground Service`, incluso si la aplicación está cerrada o la pantalla bloqueada.
