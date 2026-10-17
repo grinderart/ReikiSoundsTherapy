@@ -27,3 +27,8 @@ El proyecto fue desarrollado originalmente hace un tiempo y ha sido **completame
 ## 📜 Licencia
 
 Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.
+
+
+## OCTUBRE 2016 ##
+
+Se reactiva el proyecto.
