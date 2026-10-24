@@ -15,6 +15,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -310,10 +311,12 @@ fun MainScreen() {
                 title = "Música de Fondo y Entorno Natural"
             )
 
-            // Quick ambient environment & custom music selector chips
+            // Quick ambient environment & custom music selector chips (Horizontally scrollable)
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 val isBosque = musicUri?.toString()?.contains("bosque_aves") == true
                 val isAgua = musicUri?.toString()?.contains("agua_lluvia") == true
@@ -327,8 +330,7 @@ fun MainScreen() {
                         musicFileName = "Bosque y Aves (Naturaleza)"
                     },
                     shape = CircleShape,
-                    label = { Text("🌲 Bosque") },
-                    modifier = Modifier.weight(1f)
+                    label = { Text("🌲 Bosque") }
                 )
                 FilterChip(
                     selected = isAgua,
@@ -337,8 +339,7 @@ fun MainScreen() {
                         musicFileName = "Agua y Lluvia (Ambiente)"
                     },
                     shape = CircleShape,
-                    label = { Text("💧 Agua") },
-                    modifier = Modifier.weight(1f)
+                    label = { Text("💧 Agua") }
                 )
                 FilterChip(
                     selected = isFuego,
@@ -347,8 +348,7 @@ fun MainScreen() {
                         musicFileName = "Fuego de Leña (Cálido)"
                     },
                     shape = CircleShape,
-                    label = { Text("🔥 Fuego") },
-                    modifier = Modifier.weight(1f)
+                    label = { Text("🔥 Fuego") }
                 )
                 FilterChip(
                     selected = isCustom,
@@ -356,8 +356,7 @@ fun MainScreen() {
                         selectMusicLauncher.launch("audio/*")
                     },
                     shape = CircleShape,
-                    label = { Text("🎵 Música") },
-                    modifier = Modifier.weight(1f)
+                    label = { Text("🎵 Música") }
                 )
             }
 
@@ -430,31 +429,38 @@ fun MainScreen() {
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        "Duración Total de la Sesión",
+                        "Duración Total de la Sesión (minutos)",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        "Tiempo total antes de finalizar automáticamente la sesión",
+                        "Tiempo total antes de finalizar automáticamente",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(14.dp))
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         sessionDurations.forEach { duration ->
                             val selected = selectedSessionDuration == duration
-                            val labelText = if (duration == 0L) "∞ Infinito" else "${duration}m"
+                            val labelText = if (duration == 0L) "∞" else "$duration"
                             FilterChip(
                                 selected = selected,
                                 onClick = { selectedSessionDuration = duration },
                                 shape = CircleShape,
-                                label = { Text(labelText) },
-                                modifier = Modifier.weight(1f)
+                                label = {
+                                    Text(
+                                        text = labelText,
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(horizontal = 4.dp)
+                                    )
+                                }
                             )
                         }
                     }
@@ -475,21 +481,23 @@ fun MainScreen() {
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        "Intervalo de la Campana / Cuenco",
+                        "Intervalo de la Campana / Cuenco (minutos)",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        "Frecuencia temporal con la que sonará la campana de aviso",
+                        "Frecuencia temporal con la que sonará el aviso",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(14.dp))
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         intervals.forEach { interval ->
                             val selected = selectedInterval == interval
@@ -497,8 +505,13 @@ fun MainScreen() {
                                 selected = selected,
                                 onClick = { selectedInterval = interval },
                                 shape = CircleShape,
-                                label = { Text("${interval}m") },
-                                modifier = Modifier.weight(1f)
+                                label = {
+                                    Text(
+                                        text = "$interval",
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
+                                        modifier = Modifier.padding(horizontal = 4.dp)
+                                    )
+                                }
                             )
                         }
                     }
