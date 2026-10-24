@@ -28,6 +28,8 @@ class SoundTherapyService : Service(), AudioManager.OnAudioFocusChangeListener {
 
     private val handler = Handler(Looper.getMainLooper())
     private var bellRunnable: Runnable? = null
+    private var sessionEndRunnable: Runnable? = null
+
     private var bellUri: Uri? = null
     private var bellVolume = 1.0f
 
@@ -48,6 +50,7 @@ class SoundTherapyService : Service(), AudioManager.OnAudioFocusChangeListener {
         const val EXTRA_BINAURAL_URI = "EXTRA_BINAURAL_URI"
         const val EXTRA_BELL_URI = "EXTRA_BELL_URI"
         const val EXTRA_INTERVAL = "EXTRA_INTERVAL"
+        const val EXTRA_SESSION_DURATION = "EXTRA_SESSION_DURATION"
         const val EXTRA_VOLUME = "EXTRA_VOLUME"
         const val NOTIFICATION_CHANNEL_ID = "SoundTherapyChannel"
         const val NOTIFICATION_ID = 1
@@ -73,10 +76,15 @@ class SoundTherapyService : Service(), AudioManager.OnAudioFocusChangeListener {
                 }
 
                 val intervalMinutes = intent.getLongExtra(EXTRA_INTERVAL, 5)
+                val sessionDurationMinutes = intent.getLongExtra(EXTRA_SESSION_DURATION, 0L)
 
                 requestAudioFocus()
                 startForegroundService()
                 startPlayback(musicUri, binauralUri, intervalMinutes)
+
+                if (sessionDurationMinutes > 0) {
+                    scheduleSessionEnd(sessionDurationMinutes * 60 * 1000)
+                }
             }
             ACTION_STOP -> {
                 stopPlayback()
@@ -177,6 +185,38 @@ class SoundTherapyService : Service(), AudioManager.OnAudioFocusChangeListener {
         bellRunnable?.let { handler.post(it) }
     }
 
+    private fun scheduleSessionEnd(durationMs: Long) {
+        sessionEndRunnable?.let { handler.removeCallbacks(it) }
+        sessionEndRunnable = Runnable {
+            try {
+                if (bellUri != null) {
+                    bellPlayer?.release()
+                    bellPlayer = MediaPlayer().apply {
+                        setAudioAttributes(
+                            AudioAttributes.Builder()
+                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                .setUsage(AudioAttributes.USAGE_MEDIA)
+                                .build()
+                        )
+                        setDataSource(this@SoundTherapyService, bellUri!!)
+                        setVolume(bellVolume, bellVolume)
+                        prepare()
+                        start()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error playing final session bell: ${e.message}", e)
+            }
+            handler.postDelayed({
+                stopPlayback()
+                abandonAudioFocus()
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
+            }, 3000)
+        }
+        handler.postDelayed(sessionEndRunnable!!, durationMs)
+    }
+
     private fun stopPlayback() {
         try {
             musicPlayer?.stop()
@@ -202,6 +242,10 @@ class SoundTherapyService : Service(), AudioManager.OnAudioFocusChangeListener {
         bellPlayer = null
 
         bellRunnable?.let { handler.removeCallbacks(it) }
+        bellRunnable = null
+
+        sessionEndRunnable?.let { handler.removeCallbacks(it) }
+        sessionEndRunnable = null
     }
 
     private fun startForegroundService() {
@@ -233,7 +277,7 @@ class SoundTherapyService : Service(), AudioManager.OnAudioFocusChangeListener {
 
         val notification: Notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentTitle("Terapia de Sonido Activa")
-            .setContentText("La sesión de armonización está en curso.")
+            .setContentText("La sesión de meditación está en curso.")
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setContentIntent(pendingIntent)
             .addAction(android.R.drawable.ic_media_pause, "Detener", stopServicePendingIntent)

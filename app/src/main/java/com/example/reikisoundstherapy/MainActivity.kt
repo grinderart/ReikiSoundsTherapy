@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -79,6 +80,9 @@ fun MainScreen() {
     val intervals = listOf(1L, 3L, 5L, 10L, 15L, 20L, 30L)
     var selectedInterval by remember { mutableStateOf(intervals[2]) } // Default to 5 mins
 
+    val sessionDurations = listOf(0L, 15L, 30L, 45L, 60L, 90L)
+    var selectedSessionDuration by remember { mutableStateOf(sessionDurations[0]) } // Default to 0 (Infinite)
+
     var isPlaying by remember { mutableStateOf(false) }
 
     val selectMusicLauncher = rememberLauncherForActivityResult(
@@ -115,6 +119,7 @@ fun MainScreen() {
             putExtra(SoundTherapyService.EXTRA_BINAURAL_URI, binauralUri?.toString())
             putExtra(SoundTherapyService.EXTRA_BELL_URI, bellUri?.toString())
             putExtra(SoundTherapyService.EXTRA_INTERVAL, selectedInterval)
+            putExtra(SoundTherapyService.EXTRA_SESSION_DURATION, selectedSessionDuration)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             context.startForegroundService(serviceIntent)
@@ -278,8 +283,13 @@ fun MainScreen() {
                                 .background(MaterialTheme.colorScheme.primary)
                         )
                         Spacer(modifier = Modifier.width(12.dp))
+                        val statusMsg = if (selectedSessionDuration > 0) {
+                            "Sesión activa (Temporizador: ${selectedSessionDuration} min)..."
+                        } else {
+                            "Sesión de armonización continua en curso..."
+                        }
                         Text(
-                            "Sesión de armonización en curso...",
+                            statusMsg,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                             fontWeight = FontWeight.Medium
@@ -388,7 +398,15 @@ fun MainScreen() {
                 }
             )
 
-            // Interval Selector Card
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // ==================== SECTION 3: DURACIÓN & INTERVALOS ====================
+            SectionHeader(
+                icon = Icons.Default.Timer,
+                title = "Duración y Tiempos de Meditación"
+            )
+
+            // Session Total Duration Card
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
@@ -400,13 +418,55 @@ fun MainScreen() {
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
-                        "Intervalo de la Campana",
+                        "Duración Total de la Sesión",
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        "Frecuencia temporal con la que sonará el cuenco",
+                        "Tiempo total antes de finalizar automáticamente la sesión",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        sessionDurations.forEach { duration ->
+                            val selected = selectedSessionDuration == duration
+                            val labelText = if (duration == 0L) "∞ Infinito" else "${duration}m"
+                            FilterChip(
+                                selected = selected,
+                                onClick = { selectedSessionDuration = duration },
+                                label = { Text(labelText) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Bell Interval Selector Card
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        "Intervalo de la Campana / Cuenco",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Frecuencia temporal con la que sonará la campana de aviso",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
