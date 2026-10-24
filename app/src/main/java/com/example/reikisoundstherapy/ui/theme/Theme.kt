@@ -1,66 +1,35 @@
 package com.example.reikisoundstherapy.ui.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = DarkPrimary,
-    onPrimary = DarkOnPrimary,
-    primaryContainer = DarkPrimaryContainer,
-    onPrimaryContainer = DarkOnPrimaryContainer,
-    secondary = DarkSecondary,
-    onSecondary = DarkOnSecondary,
-    secondaryContainer = DarkSecondaryContainer,
-    onSecondaryContainer = DarkOnSecondaryContainer,
-    background = DarkBackground,
-    surface = DarkSurface,
-    onSurface = DarkOnSurface,
-    surfaceVariant = DarkSurfaceVariant,
-    onSurfaceVariant = DarkOnSurfaceVariant
-)
-
+// Force Light Theme Color Palette (Always Day Mode)
 private val LightColorScheme = lightColorScheme(
-    primary = LightPrimary,
-    onPrimary = LightOnPrimary,
-    primaryContainer = LightPrimaryContainer,
-    onPrimaryContainer = LightOnPrimaryContainer,
-    secondary = LightSecondary,
-    onSecondary = LightOnSecondary,
-    secondaryContainer = LightSecondaryContainer,
-    onSecondaryContainer = LightOnSecondaryContainer,
-    background = LightBackground,
-    surface = LightSurface,
-    onSurface = LightOnSurface,
-    surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = LightOnSurfaceVariant
+    primary = Color(0xFF65589E),
+    onPrimary = Color(0xFFFFFFFF),
+    primaryContainer = Color(0xFFE8E2FF),
+    onPrimaryContainer = Color(0xFF201352),
+    secondary = Color(0xFF43644E),
+    onSecondary = Color(0xFFFFFFFF),
+    secondaryContainer = Color(0xFFDCEADF),
+    onSecondaryContainer = Color(0xFF00210E),
+    background = Color(0xFFFAF7FC),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF1C1B1F),
+    surfaceVariant = Color(0xFFF2ECF7),
+    onSurfaceVariant = Color(0xFF49454F)
 )
 
 @Composable
 fun ReikiSoundsTherapyTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color disabled by default to showcase our serene meditative palette
+    darkTheme: Boolean = false, // Forced Light Mode
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = LightColorScheme,
         typography = Typography,
         content = content
     )

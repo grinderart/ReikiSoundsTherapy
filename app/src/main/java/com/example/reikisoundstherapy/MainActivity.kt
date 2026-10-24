@@ -18,6 +18,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Audiotrack
@@ -174,6 +175,7 @@ fun MainScreen() {
     }
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -190,15 +192,15 @@ fun MainScreen() {
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
         bottomBar = {
             Surface(
                 tonalElevation = 8.dp,
-                shadowElevation = 8.dp,
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f)
+                shadowElevation = 12.dp,
+                color = MaterialTheme.colorScheme.surface
             ) {
                 Row(
                     modifier = Modifier
@@ -212,16 +214,17 @@ fun MainScreen() {
                             onClick = { checkPermissionsAndStart() },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(54.dp),
+                                .height(56.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary,
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ),
-                            shape = MaterialTheme.shapes.extraLarge
+                            shape = CircleShape,
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
                         ) {
                             Icon(Icons.Default.PlayArrow, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Iniciar Sesión de Terapia", style = MaterialTheme.typography.titleMedium)
+                            Text("Iniciar Sesión de Terapia", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                         }
                     } else {
                         Button(
@@ -235,16 +238,17 @@ fun MainScreen() {
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(54.dp),
+                                .height(56.dp),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.errorContainer,
                                 contentColor = MaterialTheme.colorScheme.onErrorContainer
                             ),
-                            shape = MaterialTheme.shapes.extraLarge
+                            shape = CircleShape,
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 6.dp)
                         ) {
                             Icon(Icons.Default.Stop, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Detener Sesión", style = MaterialTheme.typography.titleMedium)
+                            Text("Detener Sesión", style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold))
                         }
                     }
                 }
@@ -266,10 +270,12 @@ fun MainScreen() {
                 enter = fadeIn(),
                 exit = fadeOut()
             ) {
-                Card(
-                    colors = CardDefaults.cardColors(
+                ElevatedCard(
+                    shape = RoundedCornerShape(28.dp),
+                    colors = CardDefaults.elevatedCardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     ),
+                    elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -320,6 +326,7 @@ fun MainScreen() {
                         musicUri = Uri.parse("android.resource://${context.packageName}/${R.raw.bosque_aves}")
                         musicFileName = "Bosque y Aves (Naturaleza)"
                     },
+                    shape = CircleShape,
                     label = { Text("🌲 Bosque") },
                     modifier = Modifier.weight(1f)
                 )
@@ -329,6 +336,7 @@ fun MainScreen() {
                         musicUri = Uri.parse("android.resource://${context.packageName}/${R.raw.agua_lluvia_alt}")
                         musicFileName = "Agua y Lluvia (Ambiente)"
                     },
+                    shape = CircleShape,
                     label = { Text("💧 Agua") },
                     modifier = Modifier.weight(1f)
                 )
@@ -338,6 +346,7 @@ fun MainScreen() {
                         musicUri = Uri.parse("android.resource://${context.packageName}/${R.raw.fuego_lena}")
                         musicFileName = "Fuego de Leña (Cálido)"
                     },
+                    shape = CircleShape,
                     label = { Text("🔥 Fuego") },
                     modifier = Modifier.weight(1f)
                 )
@@ -346,6 +355,7 @@ fun MainScreen() {
                     onClick = {
                         selectMusicLauncher.launch("audio/*")
                     },
+                    shape = CircleShape,
                     label = { Text("🎵 Música") },
                     modifier = Modifier.weight(1f)
                 )
@@ -407,14 +417,16 @@ fun MainScreen() {
             )
 
             // Session Total Duration Card
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ElevatedCard(
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
@@ -428,7 +440,7 @@ fun MainScreen() {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -440,6 +452,7 @@ fun MainScreen() {
                             FilterChip(
                                 selected = selected,
                                 onClick = { selectedSessionDuration = duration },
+                                shape = CircleShape,
                                 label = { Text(labelText) },
                                 modifier = Modifier.weight(1f)
                             )
@@ -449,14 +462,16 @@ fun MainScreen() {
             }
 
             // Bell Interval Selector Card
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+            ElevatedCard(
+                shape = RoundedCornerShape(28.dp),
+                colors = CardDefaults.elevatedCardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
                 ),
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(20.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
                     Text(
@@ -470,7 +485,7 @@ fun MainScreen() {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -481,6 +496,7 @@ fun MainScreen() {
                             FilterChip(
                                 selected = selected,
                                 onClick = { selectedInterval = interval },
+                                shape = CircleShape,
                                 label = { Text("${interval}m") },
                                 modifier = Modifier.weight(1f)
                             )
@@ -499,24 +515,29 @@ fun SectionHeader(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     title: String
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
+    Surface(
+        shape = CircleShape,
+        color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.8f),
+        shadowElevation = 2.dp,
+        modifier = Modifier.padding(vertical = 4.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(22.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            color = MaterialTheme.colorScheme.primary
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp)
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onPrimaryContainer
+            )
+        }
     }
 }
 
@@ -532,13 +553,14 @@ fun SoundTrackCard(
 ) {
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(28.dp),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 6.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(20.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -547,18 +569,18 @@ fun SoundTrackCard(
                 Surface(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.primaryContainer,
-                    modifier = Modifier.size(40.dp)
+                    modifier = Modifier.size(44.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = title,
@@ -574,13 +596,13 @@ fun SoundTrackCard(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             // File selection row
             OutlinedButton(
                 onClick = onSelectClick,
                 modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium
+                shape = CircleShape
             ) {
                 Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(8.dp))
@@ -592,7 +614,7 @@ fun SoundTrackCard(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Volume Slider row
             Row(
