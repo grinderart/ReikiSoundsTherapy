@@ -11,18 +11,36 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Audiotrack
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.Nature
+import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.example.reikisoundstherapy.ui.theme.ReikiSoundsTherapyTheme
+import kotlin.math.roundToInt
 
 class MainActivity : ComponentActivity() {
 
@@ -36,24 +54,30 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen() {
     val context = LocalContext.current
 
-    var musicUri by remember { mutableStateOf<Uri?>(null) }
-    var binauralUri by remember { mutableStateOf<Uri?>(null) }
-    var bellUri by remember { mutableStateOf<Uri?>(null) }
+    // Default URIs from res/raw
+    val defaultMusicUri = Uri.parse("android.resource://${context.packageName}/${R.raw.bosque_aves}")
+    val defaultBinauralUri = Uri.parse("android.resource://${context.packageName}/${R.raw.theta_binaural}")
+    val defaultBellUri = Uri.parse("android.resource://${context.packageName}/${R.raw.ring}")
 
-    var musicFileName by remember { mutableStateOf("No seleccionado") }
-    var binauralFileName by remember { mutableStateOf("No seleccionado") }
-    var bellFileName by remember { mutableStateOf("No seleccionado") }
+    var musicUri by remember { mutableStateOf<Uri?>(defaultMusicUri) }
+    var binauralUri by remember { mutableStateOf<Uri?>(defaultBinauralUri) }
+    var bellUri by remember { mutableStateOf<Uri?>(defaultBellUri) }
+
+    var musicFileName by remember { mutableStateOf("Bosque y Aves (Naturaleza)") }
+    var binauralFileName by remember { mutableStateOf("Onda Theta 1Hz (Reiki / Frecuencia)") }
+    var bellFileName by remember { mutableStateOf("Campana Tibetana (Cuenco)") }
 
     var musicVolume by remember { mutableStateOf(0.7f) }
     var binauralVolume by remember { mutableStateOf(0.5f) }
     var bellVolume by remember { mutableStateOf(1.0f) }
 
-    val intervals = listOf(3L, 5L, 10L, 15L)
-    var selectedInterval by remember { mutableStateOf(intervals[1]) } // Default to 5 mins
+    val intervals = listOf(1L, 3L, 5L, 10L, 15L, 20L, 30L)
+    var selectedInterval by remember { mutableStateOf(intervals[2]) } // Default to 5 mins
 
     var isPlaying by remember { mutableStateOf(false) }
 
@@ -62,7 +86,7 @@ fun MainScreen() {
     ) { uri: Uri? ->
         uri?.let {
             musicUri = it
-            musicFileName = it.lastPathSegment ?: "Archivo seleccionado"
+            musicFileName = it.lastPathSegment ?: "Archivo personalizado"
         }
     }
 
@@ -71,7 +95,7 @@ fun MainScreen() {
     ) { uri: Uri? ->
         uri?.let {
             binauralUri = it
-            binauralFileName = it.lastPathSegment ?: "Archivo seleccionado"
+            binauralFileName = it.lastPathSegment ?: "Archivo personalizado"
         }
     }
 
@@ -80,7 +104,7 @@ fun MainScreen() {
     ) { uri: Uri? ->
         uri?.let {
             bellUri = it
-            bellFileName = it.lastPathSegment ?: "Archivo seleccionado"
+            bellFileName = it.lastPathSegment ?: "Archivo personalizado"
         }
     }
     
@@ -89,7 +113,7 @@ fun MainScreen() {
             action = SoundTherapyService.ACTION_START
             putExtra(SoundTherapyService.EXTRA_MUSIC_URI, musicUri?.toString())
             putExtra(SoundTherapyService.EXTRA_BINAURAL_URI, binauralUri?.toString())
-            putExtra(SoundTherapyService.EXTRA_BELL_URI, bellUri.toString())
+            putExtra(SoundTherapyService.EXTRA_BELL_URI, bellUri?.toString())
             putExtra(SoundTherapyService.EXTRA_INTERVAL, selectedInterval)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -98,6 +122,7 @@ fun MainScreen() {
             context.startService(serviceIntent)
         }
         isPlaying = true
+        Toast.makeText(context, "Sesión de Terapia Iniciada", Toast.LENGTH_SHORT).show()
     }
 
     val requestPermissionsLauncher = rememberLauncherForActivityResult(
@@ -106,13 +131,13 @@ fun MainScreen() {
         if (permissions.values.all { it }) {
             startAudioService()
         } else {
-            Toast.makeText(context, "Se requieren permisos para leer audio y mostrar notificaciones.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Se requieren permisos de audio y notificaciones para continuar.", Toast.LENGTH_LONG).show()
         }
     }
 
     fun checkPermissionsAndStart() {
-        if (bellUri == null || (musicUri == null && binauralUri == null)) {
-            Toast.makeText(context, "Debes seleccionar la campana y al menos un sonido de fondo (música o binaural)", Toast.LENGTH_LONG).show()
+        if (bellUri == null && musicUri == null && binauralUri == null) {
+            Toast.makeText(context, "Selecciona al menos un sonido o campana para tu sesión", Toast.LENGTH_LONG).show()
             return
         }
 
@@ -143,153 +168,407 @@ fun MainScreen() {
         context.startService(serviceIntent)
     }
 
-    Scaffold { padding ->
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            "Reiki Sound Therapy",
+                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                        )
+                        Text(
+                            "Relajación, Solfeggio y Reiki",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            )
+        },
+        bottomBar = {
+            Surface(
+                tonalElevation = 8.dp,
+                shadowElevation = 8.dp,
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (!isPlaying) {
+                        Button(
+                            onClick = { checkPermissionsAndStart() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(54.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            shape = MaterialTheme.shapes.extraLarge
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Iniciar Sesión de Terapia", style = MaterialTheme.typography.titleMedium)
+                        }
+                    } else {
+                        Button(
+                            onClick = {
+                                val serviceIntent = Intent(context, SoundTherapyService::class.java).apply {
+                                    action = SoundTherapyService.ACTION_STOP
+                                }
+                                context.startService(serviceIntent)
+                                isPlaying = false
+                                Toast.makeText(context, "Sesión Finalizada", Toast.LENGTH_SHORT).show()
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(54.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer
+                            ),
+                            shape = MaterialTheme.shapes.extraLarge
+                        ) {
+                            Icon(Icons.Default.Stop, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Detener Sesión", style = MaterialTheme.typography.titleMedium)
+                        }
+                    }
+                }
+            }
+        }
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("🎵 Pistas de Audio", style = MaterialTheme.typography.headlineSmall)
-            
-            Spacer(modifier = Modifier.height(16.dp))
+            // Status Banner if playing
+            AnimatedVisibility(
+                visible = isPlaying,
+                enter = fadeIn(),
+                exit = fadeOut()
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(12.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primary)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Text(
+                            "Sesión de armonización en curso...",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
 
-            AudioFileSelector("Seleccionar Música de Fondo", musicFileName) {
-                selectMusicLauncher.launch("audio/*")
-            }
-            AudioFileSelector("Seleccionar Onda Binaural", binauralFileName) {
-                selectBinauralLauncher.launch("audio/*")
-            }
-            AudioFileSelector("Seleccionar Sonido de Campana", bellFileName) {
-                selectBellLauncher.launch("audio/*")
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text("🎚️ Mezclador de Volumen", style = MaterialTheme.typography.headlineSmall)
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            VolumeSlider("Música de Fondo", musicVolume) { newVolume ->
-                musicVolume = newVolume
-                setVolume(SoundTherapyService.ACTION_SET_VOLUME_MUSIC, newVolume)
-            }
-            VolumeSlider("Ondas Binaurales", binauralVolume) { newVolume ->
-                binauralVolume = newVolume
-                setVolume(SoundTherapyService.ACTION_SET_VOLUME_BINAURAL, newVolume)
-            }
-            VolumeSlider("Campana", bellVolume) { newVolume ->
-                bellVolume = newVolume
-                setVolume(SoundTherapyService.ACTION_SET_VOLUME_BELL, newVolume)
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            Divider()
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            IntervalSelector(
-                intervals = intervals,
-                selectedInterval = selectedInterval,
-                onIntervalSelected = { selectedInterval = it }
+            // ==================== SECTION 1: MÚSICA DE FONDO & AMBIENTE ====================
+            SectionHeader(
+                icon = Icons.Default.Nature,
+                title = "Música de Fondo y Entorno Natural"
             )
-            
-            Spacer(modifier = Modifier.height(24.dp))
 
+            // Quick ambient environment & custom music selector chips
             Row(
-                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                val isBosque = musicUri?.toString()?.contains("bosque_aves") == true
+                val isAgua = musicUri?.toString()?.contains("agua_lluvia") == true
+                val isFuego = musicUri?.toString()?.contains("fuego_lena") == true
+                val isCustom = !isBosque && !isAgua && !isFuego && musicUri != null
+
+                FilterChip(
+                    selected = isBosque,
+                    onClick = {
+                        musicUri = Uri.parse("android.resource://${context.packageName}/${R.raw.bosque_aves}")
+                        musicFileName = "Bosque y Aves (Naturaleza)"
+                    },
+                    label = { Text("🌲 Bosque") },
+                    modifier = Modifier.weight(1f)
+                )
+                FilterChip(
+                    selected = isAgua,
+                    onClick = {
+                        musicUri = Uri.parse("android.resource://${context.packageName}/${R.raw.agua_lluvia_alt}")
+                        musicFileName = "Agua y Lluvia (Ambiente)"
+                    },
+                    label = { Text("💧 Agua") },
+                    modifier = Modifier.weight(1f)
+                )
+                FilterChip(
+                    selected = isFuego,
+                    onClick = {
+                        musicUri = Uri.parse("android.resource://${context.packageName}/${R.raw.fuego_lena}")
+                        musicFileName = "Fuego de Leña (Cálido)"
+                    },
+                    label = { Text("🔥 Fuego") },
+                    modifier = Modifier.weight(1f)
+                )
+                FilterChip(
+                    selected = isCustom,
+                    onClick = {
+                        selectMusicLauncher.launch("audio/*")
+                    },
+                    label = { Text("🎵 Música") },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            SoundTrackCard(
+                title = "Música de Fondo / Sonido Ambiental",
+                description = "Elige un ambiente o sube tu propia música relajante",
+                fileName = musicFileName,
+                volume = musicVolume,
+                icon = Icons.Default.Audiotrack,
+                onSelectClick = { selectMusicLauncher.launch("audio/*") },
+                onVolumeChange = {
+                    musicVolume = it
+                    setVolume(SoundTherapyService.ACTION_SET_VOLUME_MUSIC, it)
+                }
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // ==================== SECTION 2: FRECUENCIAS REIKI & CAMPANA ====================
+            SectionHeader(
+                icon = Icons.Default.Spa,
+                title = "Frecuencias Reiki y Atención Plena"
+            )
+
+            SoundTrackCard(
+                title = "Ondas Binaurales / Solfeggio",
+                description = "Frecuencia de sanación y ondas cerebrales",
+                fileName = binauralFileName,
+                volume = binauralVolume,
+                icon = Icons.Default.Audiotrack,
+                onSelectClick = { selectBinauralLauncher.launch("audio/*") },
+                onVolumeChange = {
+                    binauralVolume = it
+                    setVolume(SoundTherapyService.ACTION_SET_VOLUME_BINAURAL, it)
+                }
+            )
+
+            SoundTrackCard(
+                title = "Campana / Cuenco Periódico",
+                description = "Sonido de atención plena a intervalos",
+                fileName = bellFileName,
+                volume = bellVolume,
+                icon = Icons.Default.NotificationsActive,
+                onSelectClick = { selectBellLauncher.launch("audio/*") },
+                onVolumeChange = {
+                    bellVolume = it
+                    setVolume(SoundTherapyService.ACTION_SET_VOLUME_BELL, it)
+                }
+            )
+
+            // Interval Selector Card
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Button(
-                    onClick = { checkPermissionsAndStart() },
-                    enabled = !isPlaying
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    horizontalAlignment = Alignment.Start
                 ) {
-                    Text("▶ Iniciar")
-                }
-                Spacer(modifier = Modifier.width(20.dp))
-                Button(
-                    onClick = {
-                        val serviceIntent = Intent(context, SoundTherapyService::class.java).apply {
-                            action = SoundTherapyService.ACTION_STOP
+                    Text(
+                        "Intervalo de la Campana",
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Frecuencia temporal con la que sonará el cuenco",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        intervals.forEach { interval ->
+                            val selected = selectedInterval == interval
+                            FilterChip(
+                                selected = selected,
+                                onClick = { selectedInterval = interval },
+                                label = { Text("${interval}m") },
+                                modifier = Modifier.weight(1f)
+                            )
                         }
-                        context.startService(serviceIntent)
-                        isPlaying = false
-                    },
-                    enabled = isPlaying
-                ) {
-                    Text("■ Detener")
+                    }
                 }
             }
+
+            Spacer(modifier = Modifier.height(80.dp)) // Extra padding for bottom bar
         }
     }
 }
 
 @Composable
-fun AudioFileSelector(buttonText: String, fileName: String, onClick: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally
+fun SectionHeader(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
     ) {
-        Button(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
-            Text(buttonText)
-        }
-        Text(fileName, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
-        Spacer(modifier = Modifier.height(8.dp))
-    }
-}
-
-@Composable
-fun VolumeSlider(label: String, value: Float, onValueChange: (Float) -> Unit) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Text(label)
-        Slider(
-            value = value,
-            onValueChange = onValueChange,
-            valueRange = 0f..1f
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(22.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IntervalSelector(
-    intervals: List<Long>,
-    selectedInterval: Long,
-    onIntervalSelected: (Long) -> Unit
+fun SoundTrackCard(
+    title: String,
+    description: String,
+    fileName: String,
+    volume: Float,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    onSelectClick: () -> Unit,
+    onVolumeChange: (Float) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Text("Intervalo de la campana (minutos)")
-        Spacer(modifier = Modifier.height(8.dp))
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
+    ElevatedCard(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            TextField(
-                value = selectedInterval.toString(),
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier.menuAnchor()
-            )
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                intervals.forEach { interval ->
-                    DropdownMenuItem(
-                        text = { Text(interval.toString()) },
-                        onClick = {
-                            onIntervalSelected(interval)
-                            expanded = false
-                        }
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // File selection row
+            OutlinedButton(
+                onClick = onSelectClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium
+            ) {
+                Icon(Icons.Default.FolderOpen, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = fileName,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Volume Slider row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.VolumeUp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Slider(
+                    value = volume,
+                    onValueChange = onVolumeChange,
+                    valueRange = 0f..1f,
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "${(volume * 100).roundToInt()}%",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.width(36.dp),
+                    textAlign = TextAlign.End
+                )
+            }
         }
+    }
+}
+
+@androidx.compose.ui.tooling.preview.Preview(showBackground = true, name = "MainScreen Preview", showSystemUi = true)
+@Composable
+fun MainScreenPreview() {
+    ReikiSoundsTherapyTheme {
+        MainScreen()
     }
 }
