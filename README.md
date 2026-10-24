@@ -1,34 +1,34 @@
-# Reiki Sounds Therapy
+# 🧘‍♀️ Reiki Sound Therapy
 
-Una aplicación Android sencilla y personalizable para crear sesiones de terapia de sonido y meditación. Permite a los usuarios mezclar sus propios archivos de audio (música de fondo, ondas binaurales y una campana periódica) para una experiencia relajante única.
+**Reiki Sound Therapy** es una aplicación Android moderna, serena y elegante diseñada para la creación de sesiones de armonización Reiki, meditación guiada y relajación profunda mediante la mezcla personalizada de sonidos de la naturaleza, frecuencias armónicas y avisos de atención plena.
 
-El proyecto fue desarrollado originalmente hace un tiempo y ha sido **completamente modernizado** para seguir las mejores prácticas actuales de desarrollo en Android.
+---
 
 ## ✨ Características Principales
 
-*   **Mezcla de Sonido Personalizada:** Selecciona y combina hasta tres pistas de audio desde el almacenamiento de tu dispositivo:
-    *   Música de fondo.
-    *   Ondas binaurales. (En Carpeta /Binaural)
-    *   Sonido de campana periódico. (En Carpeta /Dings)
-*   **Control de Volumen Independiente:** Ajusta el volumen de cada pista por separado para crear la mezcla perfecta.
-*   **Intervalos de Campana Configurables:** Elige cada cuántos minutos quieres que suene la campana para marcar tus sesiones.
-*   **Reproducción en Segundo Plano:** La sesión de sonido continúa activa gracias a un `Foreground Service`, incluso si la aplicación está cerrada o la pantalla bloqueada.
-*   **Interfaz Moderna:** La interfaz de usuario ha sido migrada de XML a **Jetpack Compose**, ofreciendo un código más limpio, reactivo y fácil de mantener.
-*   **Gestión de Permisos Actualizada:** Implementa la solicitud de permisos en tiempo de ejecución para Android 13 y versiones superiores, incluyendo `POST_NOTIFICATIONS`.
+* 🌿 **Entornos Naturales Out-of-the-Box:** Incluye 3 paisajes sonoros naturales predeterminados de alta calidad:
+  * 🌲 **Bosque y Aves** (Aire y ambiente natural)
+  * 💧 **Agua y Lluvia** (Fluidez y calma)
+  * 🔥 **Fuego de Leña** (Calidez)
+* 🧠 **Frecuencias Reiki & Solfeggio:** Acompaña tus sesiones con ondas binaurales Theta (1Hz) e integra tus propios archivos de audio de frecuencias Solfeggio o música personalizada.
+* 🔔 **Campana de Meditación e Intervalos:** Reproducción periódica de cuencos tibetanos y campanas de atención plena para marcar los cambios de posición de manos en Reiki o lapsos de meditación.
+* ⏱️ **Temporizador de Duración de Sesión:** Elige la duración total de tu práctica (15, 30, 45, 60, 90 minutos o modo Infinito). Al finalizar el tiempo, suena un toque final de campana suave y la sesión se detiene automáticamente.
+* 🎚️ **Mezclador de Volumen Independiente:** Ajusta el volumen de cada pista por separado para lograr la atmósfera perfecta.
+* 🎨 **Diseño Diurno M3 en Píldora (Zen UI):** Interfaz declarativa en Jetpack Compose con paleta de colores serena, tarjetas elevadas en cápsula y botones táctiles limpios y simétricos.
+* 📲 **Reproducción en Segundo Plano Estabilizada:** Funciona mediante un `Foreground Service` optimizado para Android 14+ con gestión de **Audio Focus** (`AudioManager`), pausando o atenuando el audio ante llamadas entrantes o interrupciones.
+
+---
 
 ## 🛠️ Tecnologías Utilizadas
 
-*   **Lenguaje:** 100% [Kotlin](https://kotlinlang.org/).
-*   **Interfaz de Usuario:** [Jetpack Compose](https://developer.android.com/jetpack/compose) para una UI declarativa y moderna.
-*   **Audio:** `MediaPlayer` API para la reproducción de las pistas.
-*   **Servicio en Segundo Plano:** `Foreground Service` para garantizar la reproducción de audio ininterrumpida.
-*   **Gestión de Estado:** Manejo de estado de Compose (`remember`, `mutableStateOf`) para una UI reactiva.
+* **Lenguaje:** 100% [Kotlin](https://kotlinlang.org/).
+* **UI Declarativa:** [Jetpack Compose](https://developer.android.com/jetpack/compose) & Material Design 3.
+* **Audio:** `MediaPlayer` API con gestión avanzada de atributos de audio y foco.
+* **Servicio:** Android `Foreground Service` con tipo `mediaPlayback` y soporte para notificaciones de control.
+* **Compatibilidad:** Android 8.0 (API 26) hasta Android 14+ (API 34).
+
+---
 
 ## 📜 Licencia
 
 Este proyecto está bajo la Licencia MIT. Consulta el archivo `LICENSE` para más detalles.
-
-
-## OCTUBRE 2016 ##
-
-Se reactiva el proyecto.
